@@ -4,7 +4,7 @@ clear all; close all; clc;
 img = im2double(imread('text0.png'));
 
 figure()
-imshow(img(:,:,1),[])
+imshow(img,[])
 title('image origine')
 
 %% patch init
@@ -12,7 +12,7 @@ title('image origine')
 
 taille= 7%impair
 point_depart=[uint64(w_true/2),uint64(l_true/2)]
-patch = img((point_depart(1)-taille/2:point_depart(1)+taille/2-1),(point_depart(2)-taille/2:point_depart(2)+taille/2-1));
+patch = img((point_depart(1)-taille/2:point_depart(1)+taille/2-1),(point_depart(2)-taille/2:point_depart(2)+taille/2-1), :);
 figure()
 imshow(patch,[])
 title('patch')
@@ -22,7 +22,7 @@ title('patch')
 %<w_true
 swp_taille = 63
 %swp_taille = 5*taille-1;
-swp_img = img((point_depart(1)-swp_taille/2:point_depart(1)+swp_taille/2-1),(point_depart(2)-swp_taille/2:point_depart(2)+swp_taille/2-1),1);
+swp_img = img((point_depart(1)-swp_taille/2:point_depart(1)+swp_taille/2-1),(point_depart(2)-swp_taille/2:point_depart(2)+swp_taille/2-1),:);
 %swp_img=img(:,:,1)
 [w_swp,l_swp,c_swp] = size(swp_img)
 
@@ -38,7 +38,7 @@ for k=1:w_swp
        
        %a=modilized_img(point_depart(1) - taille/2 + k +  (taille/2)  ,point_depart(2) - taille/2 + l +   (taille/2)   ,:)
        %b=patch(k,l,:)
-       modilized_img(point_depart(1) - taille/2 + k - (w_true-w_swp)  ,point_depart(2) - taille/2 + l  - (w_true-w_swp) ) = swp_img(k,l);
+       modilized_img(point_depart(1) - taille/2 + k - (w_true-w_swp)  ,point_depart(2) - taille/2 + l  - (w_true-w_swp),: ) = swp_img(k,l,:);
        filled_matrice(point_depart(1) - taille/2 + k - (w_true-w_swp)  ,point_depart(2) - taille/2 + l - (w_true-w_swp) ) = 1;
        %ab=modilized_img(point_depart(1) - taille/2 + k +  (taille/2)  ,point_depart(2) - taille/2 + l +   (taille/2)   ,:)
        compteur=compteur+1;
@@ -57,8 +57,6 @@ subplot(133)
 imshow(filled_matrice,[])
 title('matrice filled elements')
 
-
-test_distance = zeros(w_true,l_true);
 
 
 % boucle de creation de pixels
@@ -86,7 +84,7 @@ for n=0:20
             end
         end
     end
-    max_neighboorood;
+    max_neighboorood
     good_i;
     good_j;
 
@@ -120,26 +118,25 @@ for n=0:20
                    %res2 = modilized_img(good_i+k- (w_patch+1)/2,good_j+l- (l_patch+1)/2)
                    %res3 = int64(swp_img(k+a - (w_patch+1)/2,l+b - (l_patch+1)/2)) - int64(modilized_img(good_i+k- (w_patch+1)/2,good_j+l- (l_patch+1)/2))
                    if filled_matrice(good_i+k- (w_patch+1)/2,good_j+l- (l_patch+1)/2)
-                       Dist_patch = abs( swp_img( k+a-(w_patch+1)/2 , l+b-(l_patch+1)/2 ) - modilized_img( good_i+k-(w_patch+1)/2 , good_j+l-(l_patch+1)/2) ) + Dist_patch;
+                       Dist_patch = ( (swp_img( k+a-(w_patch+1)/2 , l+b-(l_patch+1)/2 , :) - modilized_img( good_i+k-(w_patch+1)/2 , good_j+l-(l_patch+1)/2 ,:)).^2 )/max_neighboorood + Dist_patch;
                        G = G + filled_matrice(good_i+k- (w_patch+1)/2,good_j+l- (l_patch+1)/2);
                    end
                end
            end
+           max_neighboorood;
            G;
-           Dist_patch = Dist_patch/G;
-           test_distance(a,b)=Dist_patch;
-           if Dist_patch < Min_dist_patch
+           Dist_patch_med = (Dist_patch(:,:,1)+Dist_patch(:,:,2)+Dist_patch(:,:,3))/3;
+           if Dist_patch_med < Min_dist_patch
                good_a=a;
                good_b=b;
-               Min_dist_patch = Dist_patch; 
+               Min_dist_patch = Dist_patch_med; 
            end
         end
     end
     good_a;
     good_b;
     Min_dist_patch; 
-    test_distance;
-    modilized_img(good_i,good_j)=swp_img(good_a,good_b);
+    modilized_img(good_i,good_j,:)=swp_img(good_a,good_b,:);
     filled_matrice(good_i,good_j)=1;
     compteur = compteur +1;
  
