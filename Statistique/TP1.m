@@ -1,7 +1,8 @@
 %% read image
 clear all; close all; clc;
 
-img = im2double(imread('text0.png'));
+str_image='text0.png'
+img = im2double(imread('text2.png'));
 
 figure()
 imshow(img,[])
@@ -10,7 +11,7 @@ title('image origine')
 %% patch init
 [w_true,l_true,c_true] = size(img)
 
-taille= 3%impair
+taille= 15%impair
 point_depart=[uint64(w_true/2),uint64(l_true/2)]
 patch = img((point_depart(1)-taille/2:point_depart(1)+taille/2-1),(point_depart(2)-taille/2:point_depart(2)+taille/2-1), :);
 figure()
@@ -29,7 +30,7 @@ swp_img = img%((point_depart(1)-swp_taille/2:point_depart(1)+swp_taille/2-1),(po
 [w_swp,l_swp,c_swp] = size(swp_img);
 
 
-base_taille = 63; % max = 
+base_taille = 20; % max = 
 point_depart_modilized=[uint64(w_swp/2),uint64(l_swp/2)]
 
 base_modelized = swp_img((point_depart_modilized(1)-base_taille/2:point_depart_modilized(1)+base_taille/2-1),(point_depart_modilized(2)-base_taille/2:point_depart_modilized(2)+base_taille/2-1),:);
@@ -44,7 +45,7 @@ title('image debut')
 
 size_modelized_x = 1;
 size_modelized_y = 1;
-size_modelized = 8;
+size_modelized = 5;
 
 [w_base,l_base,c_base] = size(base_modelized);
 modelized_img = zeros(w_base+size_modelized*2+taille-1,l_base+size_modelized*2+taille-1,3);
@@ -66,6 +67,8 @@ for k=1:w_base
        
    end
 end
+
+image_initiale = modelized_img((taille-1)/2+1:w_mod-(taille-1)/2 , (taille-1)/2+1:l_mod-(taille-1)/2 , :);
 
 figure()
 subplot(131)
@@ -159,9 +162,59 @@ title('matrice filled elements')
 
 figure()
 subplot(121)
-imshow(image_finale,[])
-title('image_finale')
-
+imshow(image_initiale,[])
+title('image origine')
 subplot(122)
+imshow(image_finale,[])
+title('image finale')
+saveas(gcf,[ 'figures_saved/figure 2 ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).png' ], 'png')
+saveas(gcf,[ 'figures_saved/figure 2 ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).fig' ], 'fig')
+
+
+
+figure()
+subplot(221)
+imshow(patch,[])
+title([ 'taille patch (', num2str(taille), 'x',num2str(taille) ,  ')'])
+subplot(222)
+imshow(swp_img,[])
+title('image swp')
+subplot(223)
+imshow(image_initiale,[])
+title('image origine')
+subplot(224)
+imshow(image_finale,[])
+title('image modelisé')
+saveas(gcf,[ 'figures_saved/all figure ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).png' ], 'png')
+saveas(gcf,[ 'figures_saved/all figure ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).fig' ], 'fig')
+
+
+
+%figure('position',get(0,'Screensize'))
+figure()
+imshow(img,[])
+title(['image origine'])
+saveas(gcf,[ 'figures_saved/image origine ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).png' ], 'png')
+saveas(gcf,[ 'figures_saved/image origine ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).fig' ], 'fig')
+figure()
+imshow(patch,[])
+title(['image patch'])
+saveas(gcf, ['figures_saved/image patch ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').png' ], 'png')
+saveas(gcf, ['figures_saved/image patch ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').fig' ], 'fig')
+figure()
+imshow(swp_img,[])
+title(['image swp'])
+saveas(gcf, ['figures_saved/image swp ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').png' ], 'png')
+saveas(gcf, ['figures_saved/image swp ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').fig' ], 'fig')
+figure()
 imshow(base_modelized,[])
-title('image_origine')
+title(['image initiale'])
+saveas(gcf, ['figures_saved/image initiale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').png' ], 'png')
+saveas(gcf, ['figures_saved/image initiale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').fig' ], 'fig')
+figure()
+imshow(image_finale,[])
+title(['image modelisee finale'])
+saveas(gcf, ['figures_saved/image modelisee finale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').png' ], 'png') 
+saveas(gcf, ['figures_saved/image modelisee finale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').fig' ], 'fig') 
+
+
