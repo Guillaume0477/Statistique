@@ -1,0 +1,448 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>TP2_2</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-10-11"><meta name="DC.source" content="TP2_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput">clc;    <span class="comment">% Clear the command window</span>
+close <span class="string">all</span>;  <span class="comment">% Close all figures</span>
+clear;  <span class="comment">% Erase all existing variables</span>
+
+k_loop = 7
+n_random = 16
+w= 0.5
+p = (1-w^n_random)^k_loop
+
+im1 = im2double(imread(<span class="string">'keble_a.jpg'</span>));
+im2 = im2double(imread(<span class="string">'keble_b.jpg'</span>));
+
+figure()
+imshow(im1,[])
+title(<span class="string">'Image 1'</span>)
+figure()
+imshow(im2,[])
+title(<span class="string">'Image 2'</span>)
+
+fileID = fopen(<span class="string">'matchesab.txt'</span>,<span class="string">'r'</span>);
+compteur_max=0;
+
+
+formatSpec = <span class="string">'%f %f %f %f'</span>;
+sizeA = [4 Inf];
+
+data_array = fscanf(fileID,formatSpec,sizeA);
+data_array = data_array';
+data_array = int64(data_array);
+
+fclose(fileID);
+
+<span class="keyword">for</span> loop=1:k_loop
+
+<span class="comment">%     fileID2 = fopen('matchesab2.txt','r');</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+<span class="comment">%     data = fscanf(fileID,formatSpec,sizeA);</span>
+<span class="comment">%     data_float = data';</span>
+<span class="comment">%     data = int64(data_float);</span>
+<span class="comment">%</span>
+<span class="comment">%     fclose(fileID2);</span>
+
+    msize = numel(data_array(:,1));
+    idx = randperm(msize);
+    data=data_array(idx(1:n_random),:);
+
+    [l,w]=size(data);
+
+    M=zeros(2*l,9);
+
+
+<span class="comment">%     figure()</span>
+<span class="comment">%     subplot(121)</span>
+<span class="comment">%     imshow(im1,[])</span>
+<span class="comment">%     subplot(122)</span>
+<span class="comment">%     imshow(im2,[])</span>
+
+    <span class="keyword">for</span> k=1:l
+        M(2*k-1,1)=data(k,1);
+        M(2*k-1,2)=data(k,2);
+        M(2*k-1,3)=1;
+        M(2*k-1,7)=-data(k,3)*data(k,1);
+        M(2*k-1,8)=-data(k,3)*data(k,2);
+        M(2*k-1,9)=-data(k,3);
+
+        M(2*k,4)=data(k,1);
+        M(2*k,5)=data(k,2);
+        M(2*k,6)=1;
+        M(2*k,7)=-data(k,4)*data(k,1);
+        M(2*k,8)=-data(k,4)*data(k,2);
+        M(2*k,9)=-data(k,4);
+    <span class="keyword">end</span>
+
+    [U,S,V]=svd(M);
+
+    h=V(:,end);
+
+    h=reshape(h,[3,3])';
+
+    new_image1=vgg_warp_H(im1,h,<span class="string">'cubic'</span>,<span class="string">'img'</span>,0);
+
+    <span class="comment">%max(new_image1)</span>
+
+<span class="comment">%     figure()</span>
+<span class="comment">%     subplot(131)</span>
+<span class="comment">%     imshow(im1,[])</span>
+<span class="comment">%     subplot(132)</span>
+<span class="comment">%     imshow(max(0,new_image1),[])</span>
+<span class="comment">%     subplot(133)</span>
+<span class="comment">%     imshow(im2,[])</span>
+
+    compteur = 0;
+
+    [l_i,w_i]=size(new_image1);
+
+    <span class="keyword">for</span> i=1:l_i
+        <span class="keyword">for</span> j=1:w_i
+            <span class="keyword">if</span> new_image1(i,j)==im2(i,j)
+                compteur=compteur+1;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% for k=1:l</span>
+    <span class="comment">%</span>
+    <span class="comment">%     test = h*[data_float(k,1); data_float(k,2); 1];</span>
+    <span class="comment">%     disp("x")</span>
+    <span class="comment">%     test(1)</span>
+    <span class="comment">%     data_float(k,3)</span>
+    <span class="comment">%</span>
+    <span class="comment">%     if test(1)==data_float(k,3)</span>
+    <span class="comment">%         disp("X EGAL")</span>
+    <span class="comment">%         compteur=compteur+1;</span>
+    <span class="comment">%     end</span>
+    <span class="comment">%     disp("y")</span>
+    <span class="comment">%     test(2)</span>
+    <span class="comment">%     data_float(k,4)</span>
+    <span class="comment">%     if test(2)==data_float(k,4)</span>
+    <span class="comment">%         disp("X EGAL")</span>
+    <span class="comment">%         compteur=compteur+1;</span>
+    <span class="comment">%     end</span>
+    <span class="comment">%</span>
+    <span class="comment">% end</span>
+    <span class="keyword">if</span> compteur &gt;= compteur_max
+        compteur_max = compteur;
+        save_h=h;
+        save_data=data;
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+save_h_2=eye(3)
+
+<span class="comment">%new_image1=vgg_warp_H(im1,save_h,'linear',[-500 725 1 568],1);</span>
+new_image1=vgg_warp_H(im1,save_h,<span class="string">'linear'</span>,[-350 720 1 568],1);
+new_image2=vgg_warp_H(im2,save_h_2,<span class="string">'linear'</span>,[-350 720 1 568],1);
+
+<span class="comment">%max(new_image1)</span>
+
+figure()
+subplot(221)
+imshow(im1,[])
+title(<span class="string">'Image 1'</span>)
+subplot(222)
+imshow(new_image1,[])
+title(<span class="string">'Image 1 tranform&eacute;e'</span>)
+subplot(223)
+imshow(im2,[])
+title(<span class="string">'Image 2'</span>)
+subplot(224)
+imshow(new_image2,[])
+title(<span class="string">'Image 2 tranform&eacute;e'</span>)
+
+
+panorama_simple =[new_image1(:,1:554,:) new_image2(:,554:end,:)];
+
+ <span class="comment">%365 est position un point qui match dans im2</span>
+new_image1 = max(0,new_image1);
+new_image2 = max(0,new_image2);
+new_image1(new_image2==0) = new_image1(new_image2==0)*2;
+new_image2(new_image1==0) = new_image2(new_image1==0)*2;
+panorama_mean=new_image1./2 + new_image2./2;
+
+
+
+figure()
+subplot(211)
+imshow(panorama_simple,[])
+title(<span class="string">'Panorama des 2 images par concatenation'</span>)
+subplot(212)
+imshow(panorama_mean,[])
+title(<span class="string">'Panorama des 2 images par moyenne'</span>)
+</pre><pre class="codeoutput">
+k_loop =
+
+     7
+
+
+n_random =
+
+    16
+
+
+w =
+
+    0.5000
+
+
+p =
+
+    0.9999
+
+
+save_h_2 =
+
+     1     0     0
+     0     1     0
+     0     0     1
+
+</pre><img vspace="5" hspace="5" src="TP2_2_01.png" alt=""> <img vspace="5" hspace="5" src="TP2_2_02.png" alt=""> <img vspace="5" hspace="5" src="TP2_2_03.png" alt=""> <img vspace="5" hspace="5" src="TP2_2_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+
+
+
+clc;    % Clear the command window
+close all;  % Close all figures
+clear;  % Erase all existing variables
+
+k_loop = 7
+n_random = 16
+w= 0.5
+p = (1-w^n_random)^k_loop
+
+im1 = im2double(imread('keble_a.jpg'));
+im2 = im2double(imread('keble_b.jpg'));
+
+figure()
+imshow(im1,[])
+title('Image 1')
+figure()
+imshow(im2,[])
+title('Image 2')
+
+fileID = fopen('matchesab.txt','r');
+compteur_max=0;
+
+
+formatSpec = '%f %f %f %f';
+sizeA = [4 Inf];
+
+data_array = fscanf(fileID,formatSpec,sizeA);
+data_array = data_array';
+data_array = int64(data_array);
+
+fclose(fileID);
+
+for loop=1:k_loop
+
+%     fileID2 = fopen('matchesab2.txt','r');
+% 
+% 
+%     data = fscanf(fileID,formatSpec,sizeA);
+%     data_float = data';
+%     data = int64(data_float);
+% 
+%     fclose(fileID2);
+
+    msize = numel(data_array(:,1));
+    idx = randperm(msize);
+    data=data_array(idx(1:n_random),:);
+
+    [l,w]=size(data);
+
+    M=zeros(2*l,9);
+
+
+%     figure()
+%     subplot(121)
+%     imshow(im1,[])
+%     subplot(122)
+%     imshow(im2,[])
+
+    for k=1:l
+        M(2*k-1,1)=data(k,1);
+        M(2*k-1,2)=data(k,2);
+        M(2*k-1,3)=1;
+        M(2*k-1,7)=-data(k,3)*data(k,1);
+        M(2*k-1,8)=-data(k,3)*data(k,2);
+        M(2*k-1,9)=-data(k,3);
+
+        M(2*k,4)=data(k,1);
+        M(2*k,5)=data(k,2);
+        M(2*k,6)=1;
+        M(2*k,7)=-data(k,4)*data(k,1);
+        M(2*k,8)=-data(k,4)*data(k,2);
+        M(2*k,9)=-data(k,4);
+    end
+
+    [U,S,V]=svd(M);
+
+    h=V(:,end);
+
+    h=reshape(h,[3,3])';
+
+    new_image1=vgg_warp_H(im1,h,'cubic','img',0);
+
+    %max(new_image1)
+
+%     figure()
+%     subplot(131)
+%     imshow(im1,[])
+%     subplot(132)
+%     imshow(max(0,new_image1),[])
+%     subplot(133)
+%     imshow(im2,[])
+
+    compteur = 0;
+
+    [l_i,w_i]=size(new_image1);
+
+    for i=1:l_i
+        for j=1:w_i
+            if new_image1(i,j)==im2(i,j)
+                compteur=compteur+1;
+            end
+        end
+    end
+
+    % for k=1:l
+    %     
+    %     test = h*[data_float(k,1); data_float(k,2); 1];
+    %     disp("x")
+    %     test(1)
+    %     data_float(k,3)
+    %     
+    %     if test(1)==data_float(k,3)
+    %         disp("X EGAL")
+    %         compteur=compteur+1;
+    %     end
+    %     disp("y")
+    %     test(2)
+    %     data_float(k,4)
+    %     if test(2)==data_float(k,4)
+    %         disp("X EGAL")
+    %         compteur=compteur+1;
+    %     end
+    % 
+    % end
+    if compteur >= compteur_max
+        compteur_max = compteur;
+        save_h=h;
+        save_data=data;
+    end
+
+end
+
+save_h_2=eye(3)
+
+%new_image1=vgg_warp_H(im1,save_h,'linear',[-500 725 1 568],1);
+new_image1=vgg_warp_H(im1,save_h,'linear',[-350 720 1 568],1);
+new_image2=vgg_warp_H(im2,save_h_2,'linear',[-350 720 1 568],1);
+
+%max(new_image1)
+
+figure()
+subplot(221)
+imshow(im1,[])
+title('Image 1')
+subplot(222)
+imshow(new_image1,[])
+title('Image 1 tranformée')
+subplot(223)
+imshow(im2,[])
+title('Image 2')
+subplot(224)
+imshow(new_image2,[])
+title('Image 2 tranformée')
+
+
+panorama_simple =[new_image1(:,1:554,:) new_image2(:,554:end,:)];
+
+ %365 est position un point qui match dans im2
+new_image1 = max(0,new_image1);
+new_image2 = max(0,new_image2);
+new_image1(new_image2==0) = new_image1(new_image2==0)*2;
+new_image2(new_image1==0) = new_image2(new_image1==0)*2;
+panorama_mean=new_image1./2 + new_image2./2;
+
+
+
+figure()
+subplot(211)
+imshow(panorama_simple,[])
+title('Panorama des 2 images par concatenation')
+subplot(212)
+imshow(panorama_mean,[])
+title('Panorama des 2 images par moyenne')
+##### SOURCE END #####
+--></body></html>
