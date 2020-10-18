@@ -127,13 +127,20 @@ figure(1);
 plot(Data(:,1),Data(:,2),'.');
 title 'Donées origine'
 
-k=5;
+d=2;
+Data=Data';
+k=2;
+
+
 pi_k = ones(1,k)/k;
 
 
 %msize = numel(data_array(:,1));
 idx = randperm(h);
-mu_array=Data(idx(1:k),:)';
+mu_array=Data(:,idx(1:k))';
+
+%mu_array=mean(Data');
+
 %rand_Data=randperm(Data)
 % 
 
@@ -144,22 +151,25 @@ mu_array=Data(idx(1:k),:)';
 
 sigma_array = zeros(2,2,k)
 
+temp_sigma = 0;
+
 for j=1:k
-    sigma_array(:,:,j) = eye(2)
+    for i=1:h
+        temp_sigma = temp_sigma + (Data(:,i)-mu_array(:,j))*(Data(:,i)-mu_array(:,j))';
+    end
+    sigma_array(:,:,j) = temp_sigma/(h);
 end
 
-
 result_Q = zeros(h,k);
-result_Q_somme = zeros(h,1)
+result_Q_somme = zeros(h,1);
 
-d=2;
-Data=Data';
+
 
 for j=1:k
     
     for i=1:h
         temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
-        temp = temp*exp(-1*(Data(:,1)-mu_array(:,j))'*(sigma_array(:,:,j)^(-1))*(Data(:,1)-mu_array(:,j)/2));
+        temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
 
         result_Q(i,j) = temp;
 
@@ -170,48 +180,58 @@ end
 
 result_Q=result_Q./result_Q_somme;
 
-[U,Data_index] = max(result_Q,[],2)
+[U,Data_index] = max(result_Q,[],2);
 mean(result_Q)
 figure(2)
 plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
 
+figure(3)
+plot3(Data(1,:),Data(2,:),1./result_Q(:,2),'.')
 
-for j=1:k
-    
-    pi_k(j)=mean(result_Q(:,j))
 
-    mu_array(:,j) = [mean(Data(1,:)*result_Q(:,j))/pi_k(j),mean((Data(2,:)*result_Q(:,j)))/(pi_k(j))]
-    
-    temp_sigma = 0
-    for i=1:h
-        temp_sigma = temp_sigma + (Data(:,i)-mu_array(:,j))*(Data(:,i)-mu_array(:,j))'*result_Q(i,j);
+
+
+
+
+for loop=1:10
+
+    for j=1:k
+
+        pi_k(j)=mean(result_Q(:,j))
+
+        mu_array(j,:) = [mean( Data(1,:).*result_Q(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q(:,j)') )/(pi_k(j))]
+
+        temp_sigma = 0;
+        for i=1:h
+            temp_sigma = temp_sigma + (Data(:,i)-mu_array(:,j))*(Data(:,i)-mu_array(:,j))'*result_Q(i,j);
+        end
+        sigma_array(:,:,j) = temp_sigma/(h*pi_k(j))
+
     end
-    sigma_array(:,:,j) = temp_sigma/(h*pi_k(j))
-    
-end
 
-for j=1:k
-    
-    for i=1:h
-        temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
-        temp = temp*exp(-1*(Data(:,1)-mu_array(:,j))'*(sigma_array(:,:,j)^(-1))*(Data(:,1)-mu_array(:,j)/2));
+    for j=1:k
 
-        result_Q(i,j) = temp;
+        for i=1:h
+            temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
+            temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
 
+            result_Q(i,j) = temp;
+
+        end
+        result_Q_somme = result_Q_somme + result_Q(:,j);
     end
-    result_Q_somme = result_Q_somme + result_Q(:,j);
+
+
+
+    result_Q=result_Q./result_Q_somme;
+
+    [U,Data_index] = max(result_Q,[],2);
+    mean(result_Q)
+    figure()
+    plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+
 end
-
-
-result_Q=result_Q./result_Q_somme;
-
-[U,Data_index] = max(result_Q,[],2)
-mean(result_Q)
-figure(2)
-plot3(Data(1,:),Data(2,:),result_Q,'.')
-
-
-
 
 
 
