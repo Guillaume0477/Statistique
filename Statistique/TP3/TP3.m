@@ -120,7 +120,7 @@ imshow(image_segmentee,[])
 clear variables;
 close all;
 
-Data= importdata("gmmd.asc");
+Data= importdata("gmm2d.asc");
 [h,w]=size(Data);
 
 figure(1);
@@ -304,16 +304,16 @@ end
 clear variables;
 close all;
 
-Data= importdata("gmmd.asc");
+Data= importdata("gmm3d.asc");
 [h,w]=size(Data);
 
 figure(1);
-plot(Data(:,1),Data(:,2),'.');
+plot3(Data(:,1),Data(:,2),Data(:,3),'.');
 title 'Donées origine'
 
 d=2;
 Data=Data';
-k=5;
+k=3;
 
 
 
@@ -333,7 +333,7 @@ old_pi_k = zeros(k);
 %msize = numel(data_array(:,1));
 idx = randperm(h);
 mu_array=Data(:,idx(1:k))';
-mu_array= [0,10;4,14;11.5,14;11,8;11,0.5];
+%mu_array= [0,10;4,14;11.5,14;11,8;11,0.5];
 
 % mu_array = zeros(2,k)
 % for j=1:k
@@ -345,7 +345,7 @@ mu_array= [0,10;4,14;11.5,14;11,8;11,0.5];
 %rand_Data=randperm(Data)
 % 
 
-sigma_array = zeros(2,2,k);
+sigma_array = zeros(3,3,k);
 
 for j=1:k
     %Data_j=Data(:,Data_index_k(:,1)==j);
@@ -392,7 +392,7 @@ mean(result_Q_somme)
 mean_pi_diff = 10;
 
 
-while mean_pi_diff>0.0001
+while mean_pi_diff>0.00001
 
     
     for j=1:k
@@ -401,7 +401,7 @@ while mean_pi_diff>0.0001
         pi_k(j)=mean(result_Q_norm(:,j));
 
 
-        mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j))];
+        mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j)), mean( (Data(3,:).*result_Q_norm(:,j)') )/(pi_k(j))];
 
         temp_sigma = 0;
         for i=1:h
@@ -477,10 +477,232 @@ hold on
 for j=1:k
     Data_j=Data(:,Data_index_k(:,1)==j);
     Idx=find(Data_index_k(:,1)==j);
-    plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
-
+    %plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
+    plot3(Data(1,Idx),Data(2,Idx),Data(3,Idx),'.')
 end
 
 
 
+
+%% Image
+
+
+clear variables;
+close all;
+
+%im = im2double(imread('text0.png'));
+im = im2double(imread('peppers.bmp'));
+
+[h_im,w_im,p_im]=size(im);
+
+Data = zeros(h_im*w_im,3);
+
+
+for i=1:h_im
+    for j=1:w_im
+        Data((j-1)+w_im*(i-1)+1,:)=im(i,j,:);
+    end
+end
+
+%Data= importdata("gmm3d.asc");
+[h,w]=size(Data);
+
+figure(1);
+plot3(Data(:,1),Data(:,2),Data(:,3),'.');
+title 'Donées origine'
+
+d=2;
+Data=Data';
+k=3;
+
+
+
+Data_index_k = randi(k,h,1);
+
+Card_k = zeros(k,1);
+
+for j=1:k
+    Card_k(j)=size(Data(Data_index_k(:,1)==j),1);
+end
+
+pi_k = Card_k./h;
+old_pi_k = zeros(k);
+
+%mu_array(:,1)
+
+%msize = numel(data_array(:,1));
+idx = randperm(h);
+mu_array=Data(:,idx(1:k))';
+%mu_array= [0,10;4,14;11.5,14;11,8;11,0.5];
+
+% mu_array = zeros(2,k)
+% for j=1:k
+%     mu_array(:,j) = mean(Data(:,Data_index_k(:,1)==j),2)';
+% end
+
+%mu_array=mean(Data');
+
+%rand_Data=randperm(Data)
+% 
+
+sigma_array = zeros(3,3,k);
+
+for j=1:k
+    %Data_j=Data(:,Data_index_k(:,1)==j);
+    temp_sigma = 0;
+    for i=1:h
+        temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:))*(Data(:,i)-mu_array(j,:))';
+    end
+    sigma_array(:,:,j) = temp_sigma./Card_k(j);
+end
+
+result_Q = zeros(h,k);
+result_Q_somme = zeros(h,1);
+
+for j=1:k
+    %Data_j=Data(:,Data_index_k(:,1)==j)
+    %Idx=find(Data_index_k(:,1)==j)
+    for i=1:h
+        temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
+        temp = temp * exp( -1 * (Data(:,i)- mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+        temp;
+        result_Q(i,j) = temp;
+
+    end
+    result_Q_somme = result_Q_somme + result_Q(:,j);
+end
+
+
+figure(2)
+plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+
+result_Q_norm=result_Q./result_Q_somme;
+
+%[U,Data_index_k] = max(result_Q_norm,[],2);
+
+
+figure(3)
+plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
+
+mean(result_Q)
+mean(result_Q_norm)
+mean(result_Q_somme)
+
+mean_pi_diff = 10;
+
+
+while mean_pi_diff>0.001
+
+    
+    for j=1:k
+
+        
+        pi_k(j)=mean(result_Q_norm(:,j));
+
+
+        mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j)), mean( (Data(3,:).*result_Q_norm(:,j)') )/(pi_k(j))];
+
+        temp_sigma = 0;
+        for i=1:h
+            temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')'*result_Q_norm(i,j);
+        end
+        sigma_array(:,:,j) = temp_sigma/(h*pi_k(j));
+
+    end
+
+    PI_DIFF = pi_k - old_pi_k
+    mean_pi_diff = mean(abs(PI_DIFF))
+    result_Q = zeros(h,k);
+    result_Q_somme = zeros(h,1);
+    
+    for j=1:k
+        %Data_j=Data(:,Data_index_k(:,1)==j);
+        %Idx=find(Data_index_k(:,1)==j);
+        for i=1:h
+            temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
+            temp = temp * exp( -1 * (Data(:,i)-mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+            temp;
+            result_Q(i,j) = temp;
+
+        end
+        result_Q_somme = result_Q_somme + result_Q(:,j);
+    end
+    
+    
+%     
+%     for j=1:k
+% 
+%         for i=1:h
+%             temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
+%             temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
+% 
+%             result_Q(i,j) = temp;
+% 
+%         end
+%         result_Q_somme = result_Q_somme + result_Q(:,j);
+%     end
+% 
+
+
+    result_Q_norm=result_Q./result_Q_somme;
+    old_pi_k = pi_k;
+
+end
+
+% 
+% 
+
+figure()
+plot3(Data(1,:),Data(2,:),result_Q_norm,'.')
+[U,Data_index_k] = max(result_Q_norm,[],2);
+result_Q;
+mean(result_Q)
+figure()
+plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+mean(result_Q)
+mean(result_Q_norm)
+mean(result_Q_somme)
+
+
+Card_k = zeros(k,1);
+
+% for j=1:k
+%     Card_k(j)=size(Data(Data_index_k(:,1)==j),1)
+% end
+
+Value = zeros(3,k);
+Data_Result = zeros(h_im*w_im,3)';
+
+figure()
+hold on
+for j=1:k
+    Data_j=Data(:,Data_index_k(:,1)==j);
+    Idx=find(Data_index_k(:,1)==j);
+    %plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
+    plot3(Data(1,Idx),Data(2,Idx),Data(3,Idx),'.')
+    Value(:,j) = mean(Data(:,Idx),2);
+    h_idx=size(Idx);
+    for l=1:h_idx
+        Data_Result(:,Idx(l)) = Value(:,j);
+    end
+end
+
+
+figure()
+plot3(Data_Result(:,1),Data_Result(:,2),Data_Result(:,3)'.')
+
+im2=im;
+for i=1:h_im
+    for j=1:w_im
+        im2(i,j,:) = Data_Result(:,(j-1)+w_im*(i-1)+1);
+    end
+end
+
+figure()
+subplot(211)
+imshow(im,[])
+subplot(212)
+imshow(im2,[])
 
