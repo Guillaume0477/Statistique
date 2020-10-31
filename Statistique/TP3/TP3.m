@@ -76,9 +76,9 @@ for i=1:30
                 moyennes(Label2(l,m),3) = moyennes(Label2(l,m),3) + im1(l,m,3);
             end
         end
-        k
-        s=size(im1((Label2==k)))
-        moyennes(k,:)/s(1)
+        k;
+        s=size(im1((Label2==k)));
+        moyennes(k,:)/s(1);
         if s(1) ~= 0
             disp("caca")
             moyennes(k,:)=moyennes(k,:)/s(1);
@@ -120,7 +120,7 @@ imshow(image_segmentee,[])
 clear variables;
 close all;
 
-Data= importdata("gmm2d.asc");
+Data= importdata("gmmd.asc");
 [h,w]=size(Data);
 
 figure(1);
@@ -138,11 +138,11 @@ Data_index_k = randi(k,h,1);
 Card_k = zeros(k,1);
 
 for j=1:k
-    Card_k(j)=size(Data(Data_index_k(:,1)==j),1)
+    Card_k(j)=size(Data(Data_index_k(:,1)==j),1);
 end
 
 pi_k = Card_k./h;
-
+old_pi_k = zeros(k);
 
 %mu_array(:,1)
 
@@ -205,13 +205,17 @@ mean(result_Q)
 mean(result_Q_norm)
 mean(result_Q_somme)
 
+mean_pi_diff = 10;
 
 
-for loop=1:300
+while mean_pi_diff>0.0001
 
+    
     for j=1:k
 
+        
         pi_k(j)=mean(result_Q_norm(:,j));
+
 
         mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j))];
 
@@ -223,6 +227,8 @@ for loop=1:300
 
     end
 
+    PI_DIFF = pi_k - old_pi_k
+    mean_pi_diff = mean(abs(PI_DIFF))
     result_Q = zeros(h,k);
     result_Q_somme = zeros(h,1);
     
@@ -256,7 +262,7 @@ for loop=1:300
 
 
     result_Q_norm=result_Q./result_Q_somme;
-
+    old_pi_k = pi_k;
 
 end
 
@@ -291,4 +297,190 @@ for j=1:k
 
 end
 
-pi_k
+
+
+
+%% nuage de points 3d
+clear variables;
+close all;
+
+Data= importdata("gmmd.asc");
+[h,w]=size(Data);
+
+figure(1);
+plot(Data(:,1),Data(:,2),'.');
+title 'Donées origine'
+
+d=2;
+Data=Data';
+k=5;
+
+
+
+Data_index_k = randi(k,h,1);
+
+Card_k = zeros(k,1);
+
+for j=1:k
+    Card_k(j)=size(Data(Data_index_k(:,1)==j),1);
+end
+
+pi_k = Card_k./h;
+old_pi_k = zeros(k);
+
+%mu_array(:,1)
+
+%msize = numel(data_array(:,1));
+idx = randperm(h);
+mu_array=Data(:,idx(1:k))';
+mu_array= [0,10;4,14;11.5,14;11,8;11,0.5];
+
+% mu_array = zeros(2,k)
+% for j=1:k
+%     mu_array(:,j) = mean(Data(:,Data_index_k(:,1)==j),2)';
+% end
+
+%mu_array=mean(Data');
+
+%rand_Data=randperm(Data)
+% 
+
+sigma_array = zeros(2,2,k);
+
+for j=1:k
+    %Data_j=Data(:,Data_index_k(:,1)==j);
+    temp_sigma = 0;
+    for i=1:h
+        temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:))*(Data(:,i)-mu_array(j,:))';
+    end
+    sigma_array(:,:,j) = temp_sigma./Card_k(j);
+end
+
+result_Q = zeros(h,k);
+result_Q_somme = zeros(h,1);
+
+for j=1:k
+    %Data_j=Data(:,Data_index_k(:,1)==j)
+    %Idx=find(Data_index_k(:,1)==j)
+    for i=1:h
+        temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
+        temp = temp * exp( -1 * (Data(:,i)- mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+        temp;
+        result_Q(i,j) = temp;
+
+    end
+    result_Q_somme = result_Q_somme + result_Q(:,j);
+end
+
+
+figure(2)
+plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+
+result_Q_norm=result_Q./result_Q_somme;
+
+%[U,Data_index_k] = max(result_Q_norm,[],2);
+
+
+figure(3)
+plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
+
+mean(result_Q)
+mean(result_Q_norm)
+mean(result_Q_somme)
+
+mean_pi_diff = 10;
+
+
+while mean_pi_diff>0.0001
+
+    
+    for j=1:k
+
+        
+        pi_k(j)=mean(result_Q_norm(:,j));
+
+
+        mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j))];
+
+        temp_sigma = 0;
+        for i=1:h
+            temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')'*result_Q_norm(i,j);
+        end
+        sigma_array(:,:,j) = temp_sigma/(h*pi_k(j));
+
+    end
+
+    PI_DIFF = pi_k - old_pi_k
+    mean_pi_diff = mean(abs(PI_DIFF))
+    result_Q = zeros(h,k);
+    result_Q_somme = zeros(h,1);
+    
+    for j=1:k
+        %Data_j=Data(:,Data_index_k(:,1)==j);
+        %Idx=find(Data_index_k(:,1)==j);
+        for i=1:h
+            temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
+            temp = temp * exp( -1 * (Data(:,i)-mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+            temp;
+            result_Q(i,j) = temp;
+
+        end
+        result_Q_somme = result_Q_somme + result_Q(:,j);
+    end
+    
+    
+%     
+%     for j=1:k
+% 
+%         for i=1:h
+%             temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
+%             temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
+% 
+%             result_Q(i,j) = temp;
+% 
+%         end
+%         result_Q_somme = result_Q_somme + result_Q(:,j);
+%     end
+% 
+
+
+    result_Q_norm=result_Q./result_Q_somme;
+    old_pi_k = pi_k;
+
+end
+
+% 
+% 
+
+figure()
+plot3(Data(1,:),Data(2,:),result_Q_norm,'.')
+[U,Data_index_k] = max(result_Q_norm,[],2);
+result_Q;
+mean(result_Q)
+figure()
+plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+mean(result_Q)
+mean(result_Q_norm)
+mean(result_Q_somme)
+
+
+Card_k = zeros(k,1);
+
+% for j=1:k
+%     Card_k(j)=size(Data(Data_index_k(:,1)==j),1)
+% end
+
+figure()
+hold on
+for j=1:k
+    Data_j=Data(:,Data_index_k(:,1)==j);
+    Idx=find(Data_index_k(:,1)==j);
+    plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
+
+end
+
+
+
+
