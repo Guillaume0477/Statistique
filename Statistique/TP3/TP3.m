@@ -148,9 +148,9 @@ k=5;
 
 idx = randperm(h);
 K_center=Data(idx(1:k),:);
+K_center=[0,10;4,14;11.5,14;11,8;11,0.5];
 
 distance = zeros(h,k);
-couleurs = ['b .', 'g .', 'r .', 'c .', 'm .'];
 
 Mean_K_center_old = mean(K_center);
 for j=1:k
@@ -159,6 +159,7 @@ end
 [Min,Label] = min(distance,[],2);
 for j=1:k
     figure(80);
+    title 'Initialisation points'
     hold on;
     plot(Data((Label==j),1),Data((Label==j),2),'.')
     pause(0.01)
@@ -173,7 +174,11 @@ for j=1:k
 end
 Card_k
 
+%for use according data
 pi_k = Card_k./h
+
+%for all 0.2
+%pi_k = 0.2*ones(k,1)
 mean(pi_k)
 old_pi_k = zeros(k);
 
@@ -190,12 +195,26 @@ for j=1:k
 end
 
 mu_array=mu_array'
+
+mu_array=K_center
 %mu_array=mean(Data');
 
 %rand_Data=randperm(Data)
 % 
+
 Data=Data'
 sigma_array = zeros(2,2,k)
+
+% for j=1:k
+%     %Data_j=Data(:,Data_index_k(:,1)==j);
+%     Data_j=Data(:,(Label==j));
+%     %Idx=find(Data_index_k(:,1)==j)
+%     temp_sigma = 0;
+%     for i=1:Card_k(j)
+%         temp_sigma = temp_sigma + (Data_j(:,i)-mu_array(j,:)')*(Data_j(:,i)-mu_array(j,:)')';
+%     end
+%     sigma_array(:,:,j) = temp_sigma./Card_k(j);
+% end
 
 for j=1:k
     %Data_j=Data(:,Data_index_k(:,1)==j);
@@ -203,9 +222,8 @@ for j=1:k
     for i=1:h
         temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')';
     end
-    sigma_array(:,:,j) = temp_sigma./Card_k(j);
+    sigma_array(:,:,j) = temp_sigma./h;
 end
-
 
 
 
@@ -236,17 +254,22 @@ for j=1:k
 end
 
 
-figure(2)
+figure()
 plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
-
+title 'mixture guaussiène'
 
 result_Q_norm=result_Q./result_Q_somme;
 
 %[U,Data_index_k] = max(result_Q_norm,[],2);
 
 
-figure(3)
+figure()
+plot3(Data(1,:),Data(2,:),result_Q(:,:),'.')
+title 'k gaussiènes'
+
+figure()
 plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
+title 'probabilité Qij'
 
 mean(result_Q)
 mean(result_Q_norm)
@@ -254,11 +277,12 @@ mean(result_Q_somme)
 
 mean_pi_diff = 10;
 
-%% boucle
+% boucle
 
-
+boucle =0
 while mean_pi_diff>0.00005
-
+%for loop=1:5
+    boucle = boucle +1
     
     for j=1:k
 
@@ -275,8 +299,8 @@ while mean_pi_diff>0.00005
         sigma_array(:,:,j) = temp_sigma/(h*pi_k(j));
 
     end
-
-    PI_DIFF = pi_k - old_pi_k
+    pi_k;
+    PI_DIFF = pi_k - old_pi_k;
     mean_pi_diff = mean(abs(PI_DIFF))
     result_Q = zeros(h,k);
     result_Q_somme = zeros(h,1);
@@ -319,12 +343,18 @@ end
 % 
 
 figure()
-plot3(Data(1,:),Data(2,:),result_Q_norm,'.')
-[U,Data_index_k] = max(result_Q_norm,[],2);
+plot3(Data(1,:),Data(2,:),result_Q,'.')
+[U,Data_index_k] = max(result_Q,[],2);
 result_Q;
 mean(result_Q)
+
 figure()
-plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+plot3(Data(1,:),Data(2,:),result_Q(:,:),'.')
+title 'k gaussiènes'
+
+figure()
+plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
+title 'probabilité Qij'
 
 mean(result_Q)
 mean(result_Q_norm)
@@ -345,201 +375,209 @@ for j=1:k
     plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
 
 end
+
+
+
+
 
 
 %% nuage de points
 clear variables;
 close all;
 
-Data= importdata("gmm2d.asc");
-[h,w]=size(Data);
+for big_loop=1:10
 
-figure(1);
-plot(Data(:,1),Data(:,2),'.');
-title 'Donées origine'
+    Data= importdata("gmm2d.asc");
+    [h,w]=size(Data);
 
-d=2;
-Data=Data';
-k=5;
+    figure(1);
+    plot(Data(:,1),Data(:,2),'.');
+    title 'Donées origine'
 
-
-
-Data_index_k = randi(k,h,1);
-
-Card_k = zeros(k,1);
-
-for j=1:k
-    Card_k(j)=size(Data(Data_index_k(:,1)==j),1);
-end
-Card_k
-
-pi_k = Card_k./h
-mean(pi_k)
-old_pi_k = zeros(k);
-
-%mu_array(:,1)
-
-%msize = numel(data_array(:,1));
-idx = randperm(h);
-mu_array=Data(:,idx(1:k))';
-mu_array= [0,10;4,14;11.5,14;11,8;11,0.5]
-
-% mu_array = zeros(2,k)
-% for j=1:k
-%     mu_array(:,j) = mean(Data(:,Data_index_k(:,1)==j),2)';
-% end
-
-%mu_array=mean(Data');
-
-%rand_Data=randperm(Data)
-% 
-
-sigma_array = zeros(2,2,k)
-
-for j=1:k
-    %Data_j=Data(:,Data_index_k(:,1)==j);
-    temp_sigma = 0;
-    for i=1:h
-        temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')';
-    end
-    sigma_array(:,:,j) = temp_sigma./Card_k(j);
-end
-
-
-pi_k
-mu_array
-sigma_array
+    d=2;
+    Data=Data';
+    k=5;
 
 
 
-result_Q = zeros(h,k);
-result_Q_somme = zeros(h,1);
+    Data_index_k = randi(k,h,1);
 
-for j=1:k
-    %Data_j=Data(:,Data_index_k(:,1)==j)
-    %Idx=find(Data_index_k(:,1)==j)
-    for i=1:h
-        temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
-        temp = temp * exp( -1 * (Data(:,i)- mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
-        temp;
-        result_Q(i,j) = temp;
+    Card_k = zeros(k,1);
 
-    end
-    result_Q_somme = result_Q_somme + result_Q(:,j);
-end
-
-
-figure(2)
-plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
-
-
-result_Q_norm=result_Q./result_Q_somme;
-
-%[U,Data_index_k] = max(result_Q_norm,[],2);
-
-
-figure(3)
-plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
-
-mean(result_Q)
-mean(result_Q_norm)
-mean(result_Q_somme)
-
-mean_pi_diff = 10;
-
-
-
-while mean_pi_diff>0.0001
-
-    
     for j=1:k
-
-        
-        pi_k(j)=mean(result_Q_norm(:,j));
-
-
-        mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j))];
-
-        temp_sigma = 0;
-        for i=1:h
-            temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')'*result_Q_norm(i,j);
-        end
-        sigma_array(:,:,j) = temp_sigma/(h*pi_k(j));
-
+        Card_k(j)=size(Data(Data_index_k(:,1)==j),1);
     end
+    Card_k;
 
-    PI_DIFF = pi_k - old_pi_k
-    mean_pi_diff = mean(abs(PI_DIFF))
-    result_Q = zeros(h,k);
-    result_Q_somme = zeros(h,1);
-    
+    pi_k = Card_k./h;
+    mean(pi_k);
+    old_pi_k = zeros(k);
+
+    %mu_array(:,1)
+
+    %msize = numel(data_array(:,1));
+    idx = randperm(h);
+    mu_array=Data(:,idx(1:k))';
+    %mu_array= [0,10;4,14;11.5,14;11,8;11,0.5]
+
+    % mu_array = zeros(2,k)
+    % for j=1:k
+    %     mu_array(:,j) = mean(Data(:,Data_index_k(:,1)==j),2)';
+    % end
+
+    %mu_array=mean(Data');
+
+    %rand_Data=randperm(Data)
+    % 
+
+    sigma_array = zeros(2,2,k);
+
     for j=1:k
         %Data_j=Data(:,Data_index_k(:,1)==j);
-        %Idx=find(Data_index_k(:,1)==j);
+        temp_sigma = 0;
+        for i=1:h
+            temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')';
+        end
+        sigma_array(:,:,j) = temp_sigma./h;
+    end
+
+
+    pi_k;
+    mu_array;
+    sigma_array;
+
+
+
+    result_Q = zeros(h,k);
+    result_Q_somme = zeros(h,1);
+
+    for j=1:k
+        %Data_j=Data(:,Data_index_k(:,1)==j)
+        %Idx=find(Data_index_k(:,1)==j)
         for i=1:h
             temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
-            temp = temp * exp( -1 * (Data(:,i)-mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+            temp = temp * exp( -1 * (Data(:,i)- mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
             temp;
             result_Q(i,j) = temp;
 
         end
         result_Q_somme = result_Q_somme + result_Q(:,j);
     end
-    
-    
-%     
-%     for j=1:k
-% 
-%         for i=1:h
-%             temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
-%             temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
-% 
-%             result_Q(i,j) = temp;
-% 
-%         end
-%         result_Q_somme = result_Q_somme + result_Q(:,j);
-%     end
-% 
+
+
+    figure(2)
+    plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
 
 
     result_Q_norm=result_Q./result_Q_somme;
-    old_pi_k = pi_k;
+
+    %[U,Data_index_k] = max(result_Q_norm,[],2);
+
+
+    figure(3)
+    plot3(Data(1,:),Data(2,:),result_Q_norm(:,:),'.')
+
+    mean(result_Q);
+    mean(result_Q_norm);
+    mean(result_Q_somme);
+
+    mean_pi_diff = 10;
+
+
+    boucle =0;
+    while mean_pi_diff>0.00005
+    %for loop=1:5
+        boucle = boucle +1;
+
+        for j=1:k
+
+
+            pi_k(j)=mean(result_Q_norm(:,j));
+
+
+            mu_array(j,:) = [mean( Data(1,:).*result_Q_norm(:,j)' )/pi_k(j) ,mean( (Data(2,:).*result_Q_norm(:,j)') )/(pi_k(j))];
+
+            temp_sigma = 0;
+            for i=1:h
+                temp_sigma = temp_sigma + (Data(:,i)-mu_array(j,:)')*(Data(:,i)-mu_array(j,:)')'*result_Q_norm(i,j);
+            end
+            sigma_array(:,:,j) = temp_sigma/(h*pi_k(j));
+
+        end
+
+        PI_DIFF = pi_k - old_pi_k;
+        mean_pi_diff = mean(abs(PI_DIFF));
+        result_Q = zeros(h,k);
+        result_Q_somme = zeros(h,1);
+
+        for j=1:k
+            %Data_j=Data(:,Data_index_k(:,1)==j);
+            %Idx=find(Data_index_k(:,1)==j);
+            for i=1:h
+                temp = pi_k(j)*1/( sqrt (det (sigma_array(:,:,j)) ) *( sqrt ((2*pi)^d) ) );
+                temp = temp * exp( -1 * (Data(:,i)-mu_array(j,:)')' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(j,:)') / 2 );
+                temp;
+                result_Q(i,j) = temp;
+
+            end
+            result_Q_somme = result_Q_somme + result_Q(:,j);
+        end
+
+
+    %     
+    %     for j=1:k
+    % 
+    %         for i=1:h
+    %             temp = pi_k(j)*1/(sqrt(det(sigma_array(:,:,j))*(sqrt(2*pi)^d)));
+    %             temp = temp * exp( -1 * (Data(:,i)-mu_array(:,j))' * (sigma_array(:,:,j)^(-1)) * (Data(:,i)-mu_array(:,j)) / 2 );
+    % 
+    %             result_Q(i,j) = temp;
+    % 
+    %         end
+    %         result_Q_somme = result_Q_somme + result_Q(:,j);
+    %     end
+    % 
+
+
+        result_Q_norm=result_Q./result_Q_somme;
+        old_pi_k = pi_k;
+
+    end
+
+    % 
+    % 
+
+    figure()
+    plot3(Data(1,:),Data(2,:),result_Q_norm,'.')
+    [U,Data_index_k] = max(result_Q_norm,[],2);
+    result_Q;
+    mean(result_Q);
+    figure()
+    plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
+
+    mean(result_Q);
+    mean(result_Q_norm);
+    mean(result_Q_somme);
+
+
+    Card_k = zeros(k,1);
+
+    % for j=1:k
+    %     Card_k(j)=size(Data(Data_index_k(:,1)==j),1)
+    % end
+
+    figure()
+    hold on
+    for j=1:k
+        Data_j=Data(:,Data_index_k(:,1)==j);
+        Idx=find(Data_index_k(:,1)==j);
+        plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
+
+    end
+    boucle
 
 end
 
-% 
-% 
-
-figure()
-plot3(Data(1,:),Data(2,:),result_Q_norm,'.')
-[U,Data_index_k] = max(result_Q_norm,[],2);
-result_Q;
-mean(result_Q)
-figure()
-plot3(Data(1,:),Data(2,:),result_Q_somme,'.')
-
-mean(result_Q)
-mean(result_Q_norm)
-mean(result_Q_somme)
-
-
-Card_k = zeros(k,1);
-
-% for j=1:k
-%     Card_k(j)=size(Data(Data_index_k(:,1)==j),1)
-% end
-
-figure()
-hold on
-for j=1:k
-    Data_j=Data(:,Data_index_k(:,1)==j);
-    Idx=find(Data_index_k(:,1)==j);
-    plot3(Data(1,Idx),Data(2,Idx),result_Q_norm(Idx,j),'.')
-
-end
-
-
-% 
 % 
 % %% nuage de points 3d
 % clear variables;
@@ -554,7 +592,7 @@ end
 % 
 % d=2;
 % Data=Data';
-% k=3;
+% k=5;
 % 
 % 
 % 
@@ -633,7 +671,7 @@ end
 % mean_pi_diff = 10;
 % 
 % 
-% while mean_pi_diff>0.00001
+% while mean_pi_diff>0.0001
 % 
 %     
 %     for j=1:k
@@ -722,7 +760,7 @@ end
 %     plot3(Data(1,Idx),Data(2,Idx),Data(3,Idx),'.')
 % end
 % 
-% 
+
 % 
 % 
 % %% Image
