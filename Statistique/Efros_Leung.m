@@ -1,9 +1,9 @@
 
 
-function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, epsilon )
+function temps = Efros_Leung(str_image , taille, taille_swp, base_taille, size_modelized, epsilon )
 
 
-
+    tic
     img = im2double(imread(str_image));
 
     figure()
@@ -11,34 +11,35 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
     title('image origine')
 
     %% patch init
-    [w_true,l_true,c_true] = size(img)
+    [w_true,l_true,c_true] = size(img);
 
 
-    point_depart=[uint64(w_true/2),uint64(l_true/2)]
-    patch = img((point_depart(1)-taille/2:point_depart(1)+taille/2-1),(point_depart(2)-taille/2:point_depart(2)+taille/2-1), :);
-    figure()
-    imshow(patch,[])
-    title('taille patch')
+    point_depart=[uint64(w_true/2),uint64(l_true/2)];
+    patch = img((point_depart(1)-taille(1)/2:point_depart(1)+taille(1)/2-1),(point_depart(2)-taille(2)/2:point_depart(2)+taille(2)/2-1), :);
+%     figure()
+%     imshow(patch,[])
+%     title('taille patch')
 
 
     %% swp_img init
     %<w_true
 
-    %swp_taille = 5*taille-1;
-    swp_img = img%((point_depart(1)-swp_taille/2:point_depart(1)+swp_taille/2-1),(point_depart(2)-swp_taille/2:point_depart(2)+swp_taille/2-1),:);
+    swp_img = img((point_depart(1)-taille_swp(1)/2:point_depart(1)+taille_swp(1)/2-1), (point_depart(2)-taille_swp(2)/2:point_depart(2)+taille_swp(2)/2-1), :);
+
+    %img%((point_depart(1)-swp_taille/2:point_depart(1)+swp_taille/2-1),(point_depart(2)-swp_taille/2:point_depart(2)+swp_taille/2-1),:);
     %swp_img=img(:,:,1)
 
     %% base modelized
     [w_swp,l_swp,c_swp] = size(swp_img);
 
 
-    point_depart_modilized=[uint64(w_swp/2),uint64(l_swp/2)]
+    point_depart_modilized=[uint64(w_swp/2),uint64(l_swp/2)];
 
     base_modelized = swp_img((point_depart_modilized(1)-base_taille/2:point_depart_modilized(1)+base_taille/2-1),(point_depart_modilized(2)-base_taille/2:point_depart_modilized(2)+base_taille/2-1),:);
 
-    figure()
-    imshow(base_modelized,[])
-    title('image debut')
+%     figure()
+%     imshow(base_modelized,[])
+%     title('image debut')
 
     %% image modelized
 
@@ -49,8 +50,8 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
 
 
     [w_base,l_base,c_base] = size(base_modelized);
-    modelized_img = zeros(w_base+size_modelized*2+taille-1,l_base+size_modelized*2+taille-1,3);
-    filled_matrice = zeros(w_base+size_modelized*2+taille-1,l_base+size_modelized*2+taille-1);
+    modelized_img = zeros(w_base+size_modelized*2+taille(1)-1,l_base+size_modelized*2+taille(2)-1,3);
+    filled_matrice = zeros(w_base+size_modelized*2+taille(1)-1,l_base+size_modelized*2+taille(2)-1);
 
     [w_patch,l_patch,c_patch] = size(patch);
     [w_mod,l_mod,c_mod] = size(modelized_img);
@@ -61,37 +62,37 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
 
            %a=modilized_img(point_depart(1) - taille/2 + k +  (taille/2)  ,point_depart(2) - taille/2 + l +   (taille/2)   ,:)
            %b=patch(k,l,:)
-           modelized_img( (taille-1)/2 + size_modelized + k   , (taille-1)/2 + size_modelized + l ,: ) = base_modelized(k,l,:);
-           filled_matrice( (taille-1)/2 + size_modelized + k  , (taille-1)/2 + size_modelized + l  ) = 1;
+           modelized_img( (taille(1)-1)/2 + size_modelized + k   , (taille(2)-1)/2 + size_modelized + l ,: ) = base_modelized(k,l,:);
+           filled_matrice( (taille(1)-1)/2 + size_modelized + k  , (taille(2)-1)/2 + size_modelized + l  ) = 1;
            %ab=modilized_img(point_depart(1) - taille/2 + k +  (taille/2)  ,point_depart(2) - taille/2 + l +   (taille/2)   ,:)
            compteur=compteur+1;
 
        end
     end
 
-    image_initiale = modelized_img((taille-1)/2+1:w_mod-(taille-1)/2 , (taille-1)/2+1:l_mod-(taille-1)/2 , :);
+    image_initiale = modelized_img((taille(1)-1)/2+1:w_mod-(taille(1)-1)/2 , (taille(2)-1)/2+1:l_mod-(taille(2)-1)/2 , :);
 
-    figure()
-    subplot(131)
-    imshow(swp_img,[])
-    title('image swp')
-    subplot(132)
-    imshow(modelized_img,[])
-    title('image modelisé')
-    subplot(133)
-    imshow(filled_matrice,[])
-    title('matrice filled elements')
+%     figure()
+%     subplot(131)
+%     imshow(swp_img,[])
+%     title('image swp')
+%     subplot(132)
+%     imshow(modelized_img,[])
+%     title('image modelisé')
+%     subplot(133)
+%     imshow(filled_matrice,[])
+%     title('matrice filled elements')
 
 
 
     % boucle de creation de pixels
-    fin=(w_base+2*size_modelized)*(l_base+2*size_modelized)
+    fin=(w_base+2*size_modelized)*(l_base+2*size_modelized);
     while compteur < fin
     %%% find good pixel
         max_neighboorood=0;
         % boucle sur 
-        for i=(((taille-1)/2)+1):w_mod-((taille-1)/2)
-            for j=(((taille-1)/2)+1):l_mod-((taille-1)/2)
+        for i=(((taille(1)-1)/2)+1):w_mod-((taille(1)-1)/2)
+            for j=(((taille(2)-1)/2)+1):l_mod-((taille(2)-1)/2)
                 neighboorood = 0;
 
                 for k=1:w_patch
@@ -111,8 +112,8 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
         good_a=-1;
         good_b=-1;
         %parcourt swp_img
-        for a=((taille-1)/2+1):w_swp-(taille-1)/2
-            for b=((taille-1)/2+1):l_swp-(taille-1)/2
+        for a=((taille(1)-1)/2+1):w_swp-(taille(1)-1)/2
+            for b=((taille(2)-1)/2+1):l_swp-(taille(2)-1)/2
                Dist_patch = 0;
                %parcourt patch
                for k=1:w_patch
@@ -124,43 +125,47 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
                    end
                end
                Dist_patch_med = (Dist_patch(:,:,1)+Dist_patch(:,:,2)+Dist_patch(:,:,3))/3;
-               if Dist_patch_med < Min_dist_patch
+               if Dist_patch_med < Min_dist_patch*(1+epsilon)
                    good_a=a;
                    good_b=b;
                    Min_dist_patch = Dist_patch_med; 
-                   if Dist_patch_med < epsilon
-                       disp("BREAK")
-
-                       break;
-                   end
+%                    if Dist_patch_med < epsilon
+%                        disp("BREAK")
+% 
+%                        break;
+%                    end
 
                 end
             end
-            if Dist_patch_med < epsilon
-                disp("BREAK2")
-                break;
-            end
+%             if Dist_patch_med < epsilon
+%                 disp("BREAK2")
+%                 break;
+%             end
         end
-        Min_dist_patch
+        % min
+        %Min_dist_patch
+        
         modelized_img(good_i,good_j,:)=swp_img(good_a,good_b,:);
         filled_matrice(good_i,good_j)=1;
         compteur = compteur +1;
 
     end
 
-    image_finale = modelized_img((taille-1)/2+1:w_mod-(taille-1)/2 , (taille-1)/2+1:l_mod-(taille-1)/2 , :);
+    image_finale = modelized_img((taille(1)-1)/2+1:w_mod-(taille(1)-1)/2 , (taille(2)-1)/2+1:l_mod-(taille(2)-1)/2 , :);
     [dim_x,dim_y,dim_z]=size(image_finale);
 
-    figure()
-    subplot(131)
-    imshow(swp_img,[])
-    title('image swp')
-    subplot(132)
-    imshow(modelized_img,[])
-    title('image modelisé')
-    subplot(133)
-    imshow(filled_matrice,[])
-    title('matrice filled elements')
+    time = toc;
+    
+%     figure()
+%     subplot(131)
+%     imshow(swp_img,[])
+%     title('image swp')
+%     subplot(132)
+%     imshow(modelized_img,[])
+%     title('image modelisé')
+%     subplot(133)
+%     imshow(filled_matrice,[])
+%     title('matrice filled elements')
 
     figure()
     subplot(121)
@@ -177,16 +182,16 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
     figure()
     subplot(221)
     imshow(patch,[])
-    title([ 'taille patch (', num2str(taille), 'x',num2str(taille) ,  ')'])
+    title([ 'taille patch (', num2str(taille(1)), 'x',num2str(taille(2)) ,  ')'])
     subplot(222)
     imshow(swp_img,[])
-    title('image swp')
+    title(['image swp (', num2str(w_swp), 'x',num2str(l_swp) ,  ')'])
     subplot(223)
     imshow(image_initiale,[])
-    title('image origine')
+    title(['image origine (', num2str(w_base), 'x',num2str(l_base) ,  ')'])
     subplot(224)
     imshow(image_finale,[])
-    title(['image modelisé final (', num2str(dim_x), 'x',num2str(dim_y) ,  ')'])
+    title(['image modelisé final (', num2str(dim_x), 'x',num2str(dim_y) ,' en ',num2str(time),  's)'])
     saveas(gcf,[ 'figures_saved/all figure ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).png' ], 'png')
     saveas(gcf,[ 'figures_saved/all figure ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized),' image = ',  str_image, ' ).fig' ], 'fig')
 
@@ -219,8 +224,8 @@ function temps = Efros_Leung(str_image , taille, base_taille, size_modelized, ep
     saveas(gcf, ['figures_saved/image modelisee finale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').png' ], 'png') 
     saveas(gcf, ['figures_saved/image modelisee finale ( taille patch = ', num2str(taille),' epsilon = ', num2str(epsilon),' taille debut = ', num2str(base_taille), ' taille modelisée = ',num2str(size_modelized), ' image = ', str_image, ').fig' ], 'fig') 
 
-
-
+    
+    temps=time;
 
 end
 
